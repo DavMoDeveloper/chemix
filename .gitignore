@@ -1,0 +1,62 @@
+# MISCELLANEOUS
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# INTELLIJ RELATED
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS CODE RELATED
+.vscode/
+
+# FLUTTER / DART / PUB (CRÍTICO)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+.last_build_id
+*.js_
+*.js_symbols
+*.js.map
+
+# SYMBOLICATION / OBFUSCATION
+app.*.symbols
+app.*.map.json
+
+# --- ANDROID (SEGURIDAD Y COMPILACIÓN) ---
+.gradle/
+/android/local.properties
+/android/key.properties
+*.keystore
+*.jks
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# --- IOS (CONFIGURACIÓN GENERADA) ---
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+
+# OTROS
+.env*
