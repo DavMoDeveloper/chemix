@@ -14,10 +14,12 @@ GoRouter buildRouter({required AnalyticsService analytics}) {
     observers: [analytics.navObserver],
     routes: [
       GoRoute(
+        name: 'home',
         path: '/',
         builder: (context, state) => const HomePage(),
         routes: [
           GoRoute(
+            name: 'element_detail',
             path: 'element/:id',
             builder: (context, state) {
               final id = state.pathParameters['id']!;
@@ -25,10 +27,12 @@ GoRouter buildRouter({required AnalyticsService analytics}) {
             },
           ),
           GoRoute(
+            name: 'quiz',
             path: 'quiz',
             builder: (context, state) => const QuizPage(),
           ),
           GoRoute(
+            name: 'quiz_result',
             path: 'quiz/result',
             builder: (context, state) {
               final score = (state.extra as Map?)?['score'] as int? ?? 0;
@@ -37,10 +41,12 @@ GoRouter buildRouter({required AnalyticsService analytics}) {
             },
           ),
           GoRoute(
+            name: 'premium',
             path: 'premium',
             builder: (context, state) => const PaywallPage(),
           ),
           GoRoute(
+            name: 'quiz_review',
             path: 'quiz/review',
             builder: (context, state) => const QuizReviewPage(),
           ),

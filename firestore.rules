@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(clientWritableFields());
+
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(clientWritableFields());
+
+      allow delete: if false;
+    }
+  }
+
+  function isOwner(userId) {
+    return request.auth != null && request.auth.uid == userId;
+  }
+
+  function clientWritableFields() {
+    return [
+      'quizzesCompleted',
+      'streak',
+      'learnedElementIds',
+      'wrongElementIds',
+      'lastQuizDate',
+      'updatedAt'
+    ];
+  }
+}

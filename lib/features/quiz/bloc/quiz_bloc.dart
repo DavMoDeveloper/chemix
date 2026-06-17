@@ -1,24 +1,30 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'quiz_event.dart';
-import 'quiz_state.dart';
-import '../domain/quiz_generator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../elements/data/elements_repository.dart';
 import '../../premium/bloc/premium_bloc.dart';
 import '../../premium/bloc/premium_state.dart';
 import '../../progress/bloc/progress_bloc.dart';
 import '../../progress/bloc/progress_event.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../data/review_service.dart';
+import '../domain/quiz_generator.dart';
+import 'quiz_event.dart';
+import 'quiz_state.dart';
 
 class QuizBloc extends Bloc<QuizEvent, QuizState> {
   static const int premiumNudgeThreshold = 3;
+  static const int firstDayFreeQuizLimit = 7;
+  static const int dailyFreeQuizLimit = 3;
+  static const String _firstQuizDateKey = 'quiz_first_quiz_date';
+  static const String _dailyQuizDateKey = 'quiz_daily_quiz_date';
+  static const String _dailyQuizCountKey = 'quiz_daily_quiz_count';
+
   final ElementsRepository elementsRepo;
   final PremiumBloc premiumBloc;
   final ProgressBloc progressBloc;
   final ReviewService reviewService;
-  // modo actual
+
   bool _isReviewMode = false;
-  // ids acertados durante repaso (para eliminarlos al final)
   final Set<String> _reviewSolvedIds = {};
 
   QuizBloc({
@@ -35,7 +41,9 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   }
 
   Future<void> _onReviewStarted(
-      ReviewQuizStarted event, Emitter<QuizState> emit) async {
+    ReviewQuizStarted event,
+    Emitter<QuizState> emit,
+  ) async {
     _isReviewMode = true;
     _reviewSolvedIds.clear();
 
@@ -48,7 +56,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     final all = await elementsRepo.getAll();
     final subset = all.where((e) => wrongIds.contains(e.id)).toList();
 
-    // si por alguna razón subset queda vacío
     if (subset.isEmpty) {
       emit(QuizLocked('No hay elementos disponibles para repasar.'));
       return;
@@ -58,8 +65,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         .where((q) => wrongIds.contains(q.elementId))
         .toList();
 
-    // fallback si no se generaron suficientes preguntas por el filtro:
-    final safeQuestions = (questions.isNotEmpty)
+    final safeQuestions = questions.isNotEmpty
         ? questions.take(10).toList()
         : QuizGenerator.generate(subset, total: subset.length.clamp(1, 10));
 
@@ -73,50 +79,52 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
     if (!isPremium) {
       final prefs = await SharedPreferences.getInstance();
-      // FIX Bug #8: usar fecha completa YYYY-MM-DD en lugar de solo el día del mes
-      final today = DateTime.now().toIso8601String().substring(0, 10);
-      final last = prefs.getString('last_quiz_date');
-      if (last == today) {
-        // Calcular tiempo restante hasta mañana
-        final now = DateTime.now();
-        final tomorrow = DateTime(now.year, now.month, now.day + 1);
-        final diff = tomorrow.difference(now);
+      final quota = await _reserveFreeQuizQuota(prefs);
+      if (!quota.allowed) {
+        final diff = _timeUntilTomorrow();
         final h = diff.inHours;
         final m = diff.inMinutes % 60;
         emit(QuizLocked(
-          'Límite diario alcanzado.\nVuelve en ${h}h ${m}min.\nO hazte Premium para quizzes ilimitados.',
+          'Limite diario alcanzado.\n'
+          'Hoy usaste ${quota.limit}/${quota.limit} quizzes gratis.\n'
+          'Vuelve en ${h}h ${m}min.\n'
+          'O hazte Premium para quizzes ilimitados.',
         ));
         return;
       }
-      await prefs.setString('last_quiz_date', today);
     }
 
     final elements = await elementsRepo.getAll();
     final questions = QuizGenerator.generate(elements, total: 10);
     emit(QuizInProgress(
-        index: 0, questions: questions, correctCount: 0, wrongCount: 0));
+      index: 0,
+      questions: questions,
+      correctCount: 0,
+      wrongCount: 0,
+    ));
   }
 
-  void _onAnswer(AnswerSelected e, Emitter<QuizState> emit) {
+  Future<void> _onAnswer(
+    AnswerSelected e,
+    Emitter<QuizState> emit,
+  ) async {
     final s = state;
     if (s is! QuizInProgress) return;
 
     final wasCorrect = e.index == s.current.correctIndex;
 
-    // FIX Bug #5: registrar los elementos correctamente respondidos en modo repaso
+    if (!wasCorrect) {
+      await reviewService.addWrong(s.current.elementId);
+    }
+
     if (_isReviewMode && wasCorrect) {
       _reviewSolvedIds.add(s.current.elementId);
     }
 
     final isPremium = premiumBloc.state is PremiumActive;
-
-    final newWrong = wasCorrect ? s.wrongCount : (s.wrongCount + 1);
-
-    // ✅ solo muestra nudge si NO es premium y llegó al umbral
+    final newWrong = wasCorrect ? s.wrongCount : s.wrongCount + 1;
     final nudge =
-        (!isPremium && !wasCorrect && newWrong >= premiumNudgeThreshold);
-
-    // Acumular IDs de elementos respondidos correctamente
+        !isPremium && !wasCorrect && newWrong >= premiumNudgeThreshold;
     final updatedCorrectIds = [
       ...s.correctElementIds,
       if (wasCorrect) s.current.elementId,
@@ -132,7 +140,6 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       correctElementIds: updatedCorrectIds,
     ));
   }
-
 
   void _onNext(NextQuestion e, Emitter<QuizState> emit) {
     final s = state;
@@ -151,7 +158,10 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     }
   }
 
-  void _onFinished(QuizFinished e, Emitter<QuizState> emit) {
+  Future<void> _onFinished(
+    QuizFinished e,
+    Emitter<QuizState> emit,
+  ) async {
     final s = state;
     if (s is! QuizInProgress) return;
     progressBloc.add(
@@ -162,9 +172,55 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       ),
     );
     if (_isReviewMode && _reviewSolvedIds.isNotEmpty) {
-      reviewService.removeMany(_reviewSolvedIds);
+      await reviewService.removeMany(_reviewSolvedIds);
     }
 
     emit(QuizCompleted(score: s.correctCount, total: s.questions.length));
   }
+
+  Future<_FreeQuizQuota> _reserveFreeQuizQuota(SharedPreferences prefs) async {
+    final today = _dateKey(DateTime.now());
+    final firstQuizDate = prefs.getString(_firstQuizDateKey) ?? today;
+    final storedDate = prefs.getString(_dailyQuizDateKey);
+
+    if (!prefs.containsKey(_firstQuizDateKey)) {
+      await prefs.setString(_firstQuizDateKey, today);
+    }
+
+    final limit =
+        firstQuizDate == today ? firstDayFreeQuizLimit : dailyFreeQuizLimit;
+    final currentCount =
+        storedDate == today ? prefs.getInt(_dailyQuizCountKey) ?? 0 : 0;
+
+    if (currentCount >= limit) {
+      return _FreeQuizQuota(allowed: false, limit: limit);
+    }
+
+    await prefs.setString(_dailyQuizDateKey, today);
+    await prefs.setInt(_dailyQuizCountKey, currentCount + 1);
+    return _FreeQuizQuota(allowed: true, limit: limit);
+  }
+
+  Duration _timeUntilTomorrow() {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    return tomorrow.difference(now);
+  }
+
+  String _dateKey(DateTime dt) {
+    final y = dt.year.toString().padLeft(4, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+}
+
+class _FreeQuizQuota {
+  final bool allowed;
+  final int limit;
+
+  const _FreeQuizQuota({
+    required this.allowed,
+    required this.limit,
+  });
 }

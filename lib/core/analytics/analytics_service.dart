@@ -1,19 +1,18 @@
-import 'package:flutter/material.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 class AnalyticsService {
-  NavigatorObserver get navObserver => _NavObserver();
+  AnalyticsService({FirebaseAnalytics? analytics})
+      : _analytics = analytics ?? FirebaseAnalytics.instance;
 
-  void logEvent(String name, {Map<String, Object?>? params}) {
-    // MVP: solo imprime. Luego lo conectas a Firebase/PostHog.
-    // ignore: avoid_print
-    print('[analytics] $name ${params ?? {}}');
-  }
-}
+  final FirebaseAnalytics _analytics;
 
-class _NavObserver extends NavigatorObserver {
-  @override
-  void didPush(Route route, Route? previousRoute) {
-    // ignore: avoid_print
-    print('[nav] push: ${route.settings.name ?? route.runtimeType}');
+  FirebaseAnalyticsObserver get navObserver =>
+      FirebaseAnalyticsObserver(analytics: _analytics);
+
+  Future<void> logEvent(
+    String name, {
+    Map<String, Object>? params,
+  }) {
+    return _analytics.logEvent(name: name, parameters: params);
   }
 }

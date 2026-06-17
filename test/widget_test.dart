@@ -6,6 +6,24 @@ import 'package:chemix/features/quiz/domain/quiz_generator.dart';
 import 'package:chemix/features/elements/data/elements_repository.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('ElementsRepository', () {
+    test('carga los 118 elementos con posiciones únicas', () async {
+      final elements = await ElementsRepository().getAll();
+      final atomicNumbers = elements.map((element) => element.atomicNumber);
+      final positions = elements.map((element) => '${element.x},${element.y}');
+
+      expect(elements.length, 118);
+      expect(
+        atomicNumbers.toSet(),
+        equals(List.generate(118, (index) => index + 1).toSet()),
+      );
+      expect(positions.toSet().length, 118);
+      expect(elements.every((element) => element.x > 0 && element.y > 0), isTrue);
+    });
+  });
+
   group('QuizGenerator', () {
     final elements = List.generate(
       20,

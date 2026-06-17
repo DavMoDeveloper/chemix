@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "182307901558",
+    "project_id": "chemix-fc9ca",
+    "storage_bucket": "chemix-fc9ca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182307901558:android:cb577cb829290b2ac54f57",
+        "android_client_info": {
+          "package_name": "com.david.chemix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGtVC7hn7wLFTqZib2tYnr1_p0f-dLrW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

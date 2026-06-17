@@ -1,16 +1,22 @@
-# chemix
+# Chemix
 
-A new Flutter project.
+App Flutter para aprender quimica mediante la tabla periodica y quizzes.
 
-## Getting Started
+## Firebase Android
 
-This project is a starting point for a Flutter application.
+La app usa el proyecto Firebase configurado en
+`android/app/google-services.json`.
 
-A few resources to get you started if this is your first Flutter project:
+Antes de probar la sincronizacion:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. En Firebase Authentication, habilita el proveedor **Anonimo**.
+2. Crea una base de datos Cloud Firestore.
+3. Publica las reglas de `firestore.rules` desde Firebase Console o con:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```powershell
+firebase deploy --only firestore:rules
+```
+
+El progreso y los errores se conservan primero en el dispositivo. Si Firebase
+no esta disponible, la app sigue funcionando offline y reintenta sincronizar
+en usos posteriores.
