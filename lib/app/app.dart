@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/analytics/analytics_service.dart';
+import '../features/compounds/bloc/compounds_bloc.dart';
+import '../features/compounds/bloc/compounds_event.dart';
+import '../features/compounds/data/compounds_repository.dart';
 
 // Elements
 import '../features/elements/data/elements_repository.dart';
@@ -39,6 +42,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   // Instanciados una única vez en el ciclo de vida
   late final AnalyticsService _analytics;
+  late final CompoundsRepository _compoundsRepo;
   late final ElementsRepository _elementsRepo;
   late final ProgressRepository _progressRepo;
   late final PurchaseService _purchaseService;
@@ -49,6 +53,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _analytics = AnalyticsService();
+    _compoundsRepo = CompoundsRepository();
     _elementsRepo = ElementsRepository();
     _progressRepo = ProgressRepository();
     _purchaseService = PurchaseService();
@@ -61,6 +66,7 @@ class _MyAppState extends State<MyApp> {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<AnalyticsService>.value(value: _analytics),
+        RepositoryProvider<CompoundsRepository>.value(value: _compoundsRepo),
         RepositoryProvider<ElementsRepository>.value(value: _elementsRepo),
         RepositoryProvider<ProgressRepository>.value(value: _progressRepo),
         RepositoryProvider<PurchaseService>.value(value: _purchaseService),
@@ -70,15 +76,20 @@ class _MyAppState extends State<MyApp> {
         providers: [
           // Premium
           BlocProvider<PremiumBloc>(
-            create: (_) =>
-                PremiumBloc(purchaseService: _purchaseService)
-                  ..add(PremiumStarted()),
+            create: (_) => PremiumBloc(purchaseService: _purchaseService)
+              ..add(PremiumStarted()),
           ),
 
           // Elements
           BlocProvider<ElementsBloc>(
             create: (_) =>
                 ElementsBloc(repo: _elementsRepo)..add(ElementsStarted()),
+          ),
+
+          // Compounds
+          BlocProvider<CompoundsBloc>(
+            create: (_) =>
+                CompoundsBloc(repo: _compoundsRepo)..add(CompoundsStarted()),
           ),
 
           // Progress
@@ -91,8 +102,10 @@ class _MyAppState extends State<MyApp> {
           BlocProvider<QuizBloc>(
             create: (ctx) => QuizBloc(
               elementsRepo: ctx.read<ElementsRepository>(),
+              compoundsRepo: ctx.read<CompoundsRepository>(),
               premiumBloc: ctx.read<PremiumBloc>(),
               progressBloc: ctx.read<ProgressBloc>(),
+              progressRepo: ctx.read<ProgressRepository>(),
               reviewService: ctx.read<ReviewService>(),
             ),
           ),

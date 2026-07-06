@@ -11,7 +11,8 @@ class ElementsBloc extends Bloc<ElementsEvent, ElementsState> {
     on<ElementsSearchChanged>(_onSearchChanged);
   }
 
-  Future<void> _onStarted(ElementsStarted event, Emitter<ElementsState> emit) async {
+  Future<void> _onStarted(
+      ElementsStarted event, Emitter<ElementsState> emit) async {
     emit(ElementsLoading());
     try {
       final all = await repo.getAll();
@@ -21,7 +22,8 @@ class ElementsBloc extends Bloc<ElementsEvent, ElementsState> {
     }
   }
 
-  void _onSearchChanged(ElementsSearchChanged event, Emitter<ElementsState> emit) {
+  void _onSearchChanged(
+      ElementsSearchChanged event, Emitter<ElementsState> emit) {
     final s = state;
     if (s is! ElementsLoaded) return;
 

@@ -6,8 +6,11 @@ sealed class PremiumState extends Equatable {
 }
 
 class PremiumLoading extends PremiumState {}
+
 class PremiumFree extends PremiumState {}
+
 class PremiumActive extends PremiumState {}
+
 class PremiumError extends PremiumState {
   final String message;
   PremiumError(this.message);

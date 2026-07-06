@@ -32,7 +32,8 @@ class _QuizResultPageState extends State<QuizResultPage>
         vsync: this, duration: const Duration(milliseconds: 1200));
 
     _scaleAnim = CurvedAnimation(parent: _scaleCtrl, curve: Curves.elasticOut);
-    _progressAnim = CurvedAnimation(parent: _progressCtrl, curve: Curves.easeOut);
+    _progressAnim =
+        CurvedAnimation(parent: _progressCtrl, curve: Curves.easeOut);
 
     _progressCtrl.forward();
     if (perfect || great) _scaleCtrl.forward();
@@ -53,7 +54,11 @@ class _QuizResultPageState extends State<QuizResultPage>
     final (emoji, message, messageColor) = switch (true) {
       _ when perfect => ('🎉', '¡Perfecto! ¡Eres increíble!', Colors.amber),
       _ when great => ('🔥', '¡Muy bien! Sigue así', Colors.orange),
-      _ when widget.score >= widget.total ~/ 2 => ('💪', 'Buen intento, puedes hacerlo mejor', colorScheme.primary),
+      _ when widget.score >= widget.total ~/ 2 => (
+          '💪',
+          'Buen intento, puedes hacerlo mejor',
+          colorScheme.primary
+        ),
       _ => ('📚', 'Sigue practicando, ¡tú puedes!', Colors.grey),
     };
 
@@ -133,7 +138,7 @@ class _QuizResultPageState extends State<QuizResultPage>
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () => context.go('/quiz'),
+                  onPressed: () => context.go('/learn'),
                   icon: const Icon(Icons.replay),
                   label: const Text('Repetir quiz'),
                 ),

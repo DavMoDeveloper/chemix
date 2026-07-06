@@ -1,11 +1,19 @@
 import 'package:equatable/equatable.dart';
+import '../domain/quiz_generator.dart';
 
 sealed class QuizEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
 
-class QuizStarted extends QuizEvent {}
+class QuizStarted extends QuizEvent {
+  final QuizMode mode;
+
+  QuizStarted({this.mode = QuizMode.mixed});
+
+  @override
+  List<Object?> get props => [mode];
+}
 
 class AnswerSelected extends QuizEvent {
   final int index;
@@ -19,4 +27,11 @@ class NextQuestion extends QuizEvent {}
 
 class QuizFinished extends QuizEvent {}
 
-class ReviewQuizStarted extends QuizEvent {}
+class ReviewQuizStarted extends QuizEvent {
+  final QuizMode mode;
+
+  ReviewQuizStarted({this.mode = QuizMode.reviewDue});
+
+  @override
+  List<Object?> get props => [mode];
+}

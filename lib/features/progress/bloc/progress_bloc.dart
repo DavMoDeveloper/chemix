@@ -11,16 +11,19 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
     on<ProgressUpdatedAfterQuiz>(_onUpdatedAfterQuiz);
   }
 
-  Future<void> _onStarted(ProgressStarted event, Emitter<ProgressState> emit) async {
+  Future<void> _onStarted(
+      ProgressStarted event, Emitter<ProgressState> emit) async {
     final data = await repo.load();
     emit(ProgressLoaded(data));
   }
 
-  Future<void> _onUpdatedAfterQuiz(ProgressUpdatedAfterQuiz e, Emitter<ProgressState> emit) async {
+  Future<void> _onUpdatedAfterQuiz(
+      ProgressUpdatedAfterQuiz e, Emitter<ProgressState> emit) async {
     await repo.updateAfterQuiz(
       score: e.score,
       total: e.total,
       correctElementIds: e.correctElementIds,
+      answers: e.answers,
     );
     final data = await repo.load();
     emit(ProgressLoaded(data));

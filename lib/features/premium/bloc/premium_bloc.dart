@@ -12,13 +12,15 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
     on<PurchaseRestored>(_onRestored);
   }
 
-  Future<void> _onStarted(PremiumStarted event, Emitter<PremiumState> emit) async {
+  Future<void> _onStarted(
+      PremiumStarted event, Emitter<PremiumState> emit) async {
     emit(PremiumLoading());
     final active = await purchaseService.hasActiveEntitlement();
     emit(active ? PremiumActive() : PremiumFree());
   }
 
-  Future<void> _onPurchaseRequested(PurchaseRequested e, Emitter<PremiumState> emit) async {
+  Future<void> _onPurchaseRequested(
+      PurchaseRequested e, Emitter<PremiumState> emit) async {
     try {
       await purchaseService.buy(e.productId);
       emit(PremiumActive());
@@ -27,7 +29,8 @@ class PremiumBloc extends Bloc<PremiumEvent, PremiumState> {
     }
   }
 
-  Future<void> _onRestored(PurchaseRestored event, Emitter<PremiumState> emit) async {
+  Future<void> _onRestored(
+      PurchaseRestored event, Emitter<PremiumState> emit) async {
     await purchaseService.restore();
     add(PremiumStarted());
   }

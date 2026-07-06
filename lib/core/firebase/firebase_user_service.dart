@@ -14,9 +14,8 @@ class FirebaseUserService {
     if (currentUser != null) return currentUser;
 
     try {
-      final credential = await _auth
-          .signInAnonymously()
-          .timeout(const Duration(seconds: 8));
+      final credential =
+          await _auth.signInAnonymously().timeout(const Duration(seconds: 8));
       return credential.user;
     } on Object catch (error, stackTrace) {
       developer.log(

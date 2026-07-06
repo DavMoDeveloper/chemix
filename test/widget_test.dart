@@ -1,15 +1,13 @@
-// Tests básicos de humo para Chemix.
-// TODO: añadir tests unitarios para QuizBloc, QuizGenerator, ProgressRepository.
-
-import 'package:flutter_test/flutter_test.dart';
-import 'package:chemix/features/quiz/domain/quiz_generator.dart';
+import 'package:chemix/features/compounds/data/compounds_repository.dart';
 import 'package:chemix/features/elements/data/elements_repository.dart';
+import 'package:chemix/features/quiz/domain/quiz_generator.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('ElementsRepository', () {
-    test('carga los 118 elementos con posiciones únicas', () async {
+    test('carga los 118 elementos con posiciones unicas', () async {
       final elements = await ElementsRepository().getAll();
       final atomicNumbers = elements.map((element) => element.atomicNumber);
       final positions = elements.map((element) => '${element.x},${element.y}');
@@ -20,7 +18,10 @@ void main() {
         equals(List.generate(118, (index) => index + 1).toSet()),
       );
       expect(positions.toSet().length, 118);
-      expect(elements.every((element) => element.x > 0 && element.y > 0), isTrue);
+      expect(
+        elements.every((element) => element.x > 0 && element.y > 0),
+        isTrue,
+      );
     });
   });
 
@@ -41,22 +42,51 @@ void main() {
       ),
     );
 
-    test('genera el número correcto de preguntas', () {
-      final questions = QuizGenerator.generate(elements, total: 10);
+    final compounds = List.generate(
+      6,
+      (i) => CompoundItem(
+        id: 'compound-$i',
+        name: 'Compuesto$i',
+        formula: 'C$i',
+        category: i % 2 == 0 ? 'Sal' : 'Acido',
+        molarMass: '${10 + i} g/mol',
+        state: i % 2 == 0 ? 'Solido' : 'Liquido',
+        summary: 'Resumen compuesto $i',
+        uses: 'Usos compuesto $i',
+        safety: 'Seguridad compuesto $i',
+      ),
+    );
+
+    test('genera el numero correcto de preguntas', () {
+      final questions = QuizGenerator.generate(
+        elements: elements,
+        compounds: compounds,
+        total: 10,
+      );
       expect(questions.length, 10);
     });
 
-    test('el índice correcto siempre está dentro del rango de opciones', () {
-      final questions = QuizGenerator.generate(elements, total: 10);
+    test('el indice correcto siempre esta dentro del rango de opciones', () {
+      final questions = QuizGenerator.generate(
+        elements: elements,
+        compounds: compounds,
+        total: 10,
+      );
       for (final q in questions) {
         expect(q.correctIndex, greaterThanOrEqualTo(0));
         expect(q.correctIndex, lessThan(q.options.length));
         expect(q.options[q.correctIndex], isNotEmpty);
+        expect(q.explanation, isNotEmpty);
       }
     });
 
-    test('las preguntas tienen 4 opciones cada una', () {
-      final questions = QuizGenerator.generate(elements, total: 5);
+    test('las preguntas basicas tienen 4 opciones cada una', () {
+      final questions = QuizGenerator.generate(
+        elements: elements,
+        compounds: compounds,
+        mode: QuizMode.elementsBasics,
+        total: 5,
+      );
       for (final q in questions) {
         expect(q.options.length, 4);
       }

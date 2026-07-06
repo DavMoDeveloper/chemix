@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../progress/data/progress_repository.dart';
 import '../domain/question.dart';
 
 sealed class QuizState extends Equatable {
@@ -23,8 +24,10 @@ class QuizInProgress extends QuizState {
   final int? selected;
   final int wrongCount;
   final bool showPremiumNudge;
+
   /// IDs de elementos respondidos correctamente en este quiz
   final List<String> correctElementIds;
+  final List<QuizAnswerRecord> answers;
 
   QuizInProgress({
     required this.index,
@@ -34,14 +37,23 @@ class QuizInProgress extends QuizState {
     this.wrongCount = 0,
     this.showPremiumNudge = false,
     this.correctElementIds = const [],
+    this.answers = const [],
   });
 
   Question get current => questions[index];
 
   @override
-  List<Object?> get props => [index, questions, correctCount, selected, wrongCount, showPremiumNudge, correctElementIds];
+  List<Object?> get props => [
+        index,
+        questions,
+        correctCount,
+        selected,
+        wrongCount,
+        showPremiumNudge,
+        correctElementIds,
+        answers,
+      ];
 }
-
 
 class QuizCompleted extends QuizState {
   final int score;

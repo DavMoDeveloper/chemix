@@ -1,9 +1,12 @@
 import 'package:go_router/go_router.dart';
 
 import '../core/analytics/analytics_service.dart';
+import '../features/compounds/presentation/compound_detail_page.dart';
 import '../features/elements/presentation/element_detail_page.dart';
 import '../features/elements/presentation/home_page.dart';
 import '../features/premium/presentation/paywall_page.dart';
+import '../features/quiz/domain/quiz_generator.dart';
+import '../features/quiz/presentation/learning_routes_page.dart';
 import '../features/quiz/presentation/quiz_page.dart';
 import '../features/quiz/presentation/quiz_result_page.dart';
 import '../features/quiz/presentation/quiz_review_page.dart';
@@ -27,9 +30,25 @@ GoRouter buildRouter({required AnalyticsService analytics}) {
             },
           ),
           GoRoute(
+            name: 'compound_detail',
+            path: 'compound/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return CompoundDetailPage(compoundId: id);
+            },
+          ),
+          GoRoute(
+            name: 'learn',
+            path: 'learn',
+            builder: (context, state) => const LearningRoutesPage(),
+          ),
+          GoRoute(
             name: 'quiz',
             path: 'quiz',
-            builder: (context, state) => const QuizPage(),
+            builder: (context, state) {
+              final mode = quizModeFromName(state.uri.queryParameters['mode']);
+              return QuizPage(mode: mode);
+            },
           ),
           GoRoute(
             name: 'quiz_result',

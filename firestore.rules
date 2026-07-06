@@ -26,6 +26,8 @@ service cloud.firestore {
       'streak',
       'learnedElementIds',
       'wrongElementIds',
+      'masteryItems',
+      'reviewMistakes',
       'lastQuizDate',
       'updatedAt'
     ];

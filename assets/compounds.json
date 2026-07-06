@@ -1,0 +1,90 @@
+[
+  {
+    "id": "water",
+    "name": "Agua",
+    "formula": "H2O",
+    "category": "Compuesto inorganico",
+    "molarMass": "18.015 g/mol",
+    "state": "Liquido",
+    "summary": "El agua es una molecula formada por dos atomos de hidrogeno y uno de oxigeno. Es esencial para los seres vivos y participa en una enorme cantidad de reacciones quimicas.",
+    "uses": "Hidratacion, limpieza, agricultura, industria, transporte de sustancias y regulacion de temperatura.",
+    "safety": "Generalmente segura, pero puede contaminarse con microorganismos o sustancias toxicas."
+  },
+  {
+    "id": "carbon-dioxide",
+    "name": "Dioxido de carbono",
+    "formula": "CO2",
+    "category": "Oxido",
+    "molarMass": "44.01 g/mol",
+    "state": "Gas",
+    "summary": "El dioxido de carbono esta formado por un atomo de carbono y dos de oxigeno. Se produce en la respiracion, la combustion y varios procesos industriales.",
+    "uses": "Bebidas carbonatadas, extintores, refrigeracion como hielo seco y control de atmosferas en invernaderos.",
+    "safety": "En concentraciones altas desplaza el oxigeno y puede causar asfixia."
+  },
+  {
+    "id": "sodium-chloride",
+    "name": "Cloruro de sodio",
+    "formula": "NaCl",
+    "category": "Sal",
+    "molarMass": "58.44 g/mol",
+    "state": "Solido",
+    "summary": "El cloruro de sodio es una sal ionica formada por sodio y cloro. Es conocido comunmente como sal de mesa.",
+    "uses": "Condimento, conservacion de alimentos, deshielo de carreteras y produccion de cloro e hidroxido de sodio.",
+    "safety": "El consumo excesivo puede contribuir a problemas de presion arterial."
+  },
+  {
+    "id": "methane",
+    "name": "Metano",
+    "formula": "CH4",
+    "category": "Hidrocarburo",
+    "molarMass": "16.04 g/mol",
+    "state": "Gas",
+    "summary": "El metano es el hidrocarburo mas simple. Es el componente principal del gas natural y una fuente importante de energia.",
+    "uses": "Combustible domestico e industrial, generacion electrica y materia prima quimica.",
+    "safety": "Es inflamable y puede formar mezclas explosivas con el aire."
+  },
+  {
+    "id": "ammonia",
+    "name": "Amoniaco",
+    "formula": "NH3",
+    "category": "Base",
+    "molarMass": "17.031 g/mol",
+    "state": "Gas",
+    "summary": "El amoniaco contiene nitrogeno e hidrogeno. Es una base debil con olor intenso y alta importancia industrial.",
+    "uses": "Fertilizantes, productos de limpieza, refrigeracion industrial y sintesis de otros compuestos.",
+    "safety": "Puede irritar ojos, piel y vias respiratorias; debe manejarse con ventilacion adecuada."
+  },
+  {
+    "id": "glucose",
+    "name": "Glucosa",
+    "formula": "C6H12O6",
+    "category": "Carbohidrato",
+    "molarMass": "180.16 g/mol",
+    "state": "Solido",
+    "summary": "La glucosa es un azucar simple que funciona como fuente principal de energia para muchas celulas.",
+    "uses": "Nutricion, soluciones medicas, fermentacion y estudios de metabolismo.",
+    "safety": "Es segura en cantidades normales; el exceso en sangre requiere control medico."
+  },
+  {
+    "id": "sulfuric-acid",
+    "name": "Acido sulfurico",
+    "formula": "H2SO4",
+    "category": "Acido",
+    "molarMass": "98.079 g/mol",
+    "state": "Liquido",
+    "summary": "El acido sulfurico es un acido fuerte y muy corrosivo. Es uno de los productos quimicos mas fabricados en el mundo.",
+    "uses": "Baterias de automovil, fertilizantes, refinacion de petroleo y procesamiento de minerales.",
+    "safety": "Causa quemaduras graves y reacciona violentamente con agua si se mezcla incorrectamente."
+  },
+  {
+    "id": "ethanol",
+    "name": "Etanol",
+    "formula": "C2H5OH",
+    "category": "Alcohol",
+    "molarMass": "46.07 g/mol",
+    "state": "Liquido",
+    "summary": "El etanol es un alcohol de dos carbonos. Aparece en bebidas alcoholicas y tambien se usa como solvente y combustible.",
+    "uses": "Desinfectantes, solventes, combustibles, perfumeria y sintesis quimica.",
+    "safety": "Es inflamable; su consumo excesivo afecta el sistema nervioso y otros organos."
+  }
+]

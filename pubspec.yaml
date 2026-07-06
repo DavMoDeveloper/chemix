@@ -39,4 +39,5 @@ flutter:
 
   assets:
     - assets/elements.json
+    - assets/compounds.json
     - assets/branding/logo.png

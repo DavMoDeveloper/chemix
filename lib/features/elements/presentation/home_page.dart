@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../compounds/presentation/compounds_page.dart';
 import '../../elements/bloc/elements_bloc.dart';
 import '../../elements/bloc/elements_event.dart';
 import '../../elements/bloc/elements_state.dart';
@@ -22,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final pages = [
       _ElementsTab(),
+      const CompoundsPage(),
       const ProgressPage(),
     ];
 
@@ -34,7 +36,7 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Chemix'),
         actions: [
           IconButton(
-            onPressed: () => context.go('/quiz'),
+            onPressed: () => context.go('/learn'),
             icon: const Icon(Icons.quiz_outlined),
             tooltip: 'Quiz',
           ),
@@ -44,8 +46,8 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
         onDestinationSelected: (i) {
-          if (i == 2) {
-            context.go('/quiz');
+          if (i == 3) {
+            context.go('/learn');
           } else {
             setState(() => index = i);
           }
@@ -55,6 +57,11 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.format_list_bulleted_outlined),
             selectedIcon: Icon(Icons.format_list_bulleted),
             label: 'Elementos',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.science_outlined),
+            selectedIcon: Icon(Icons.science),
+            label: 'Compuestos',
           ),
           NavigationDestination(
             icon: Icon(Icons.show_chart_outlined),

@@ -15,7 +15,8 @@ class ElementsLoaded extends ElementsState {
   final List<ElementItem> filtered;
   final String query;
 
-  ElementsLoaded({required this.all, required this.filtered, required this.query});
+  ElementsLoaded(
+      {required this.all, required this.filtered, required this.query});
 
   @override
   List<Object?> get props => [all, filtered, query];

@@ -7,6 +7,7 @@ sealed class ProgressState extends Equatable {
 }
 
 class ProgressLoading extends ProgressState {}
+
 class ProgressLoaded extends ProgressState {
   final ProgressData data;
   ProgressLoaded(this.data);

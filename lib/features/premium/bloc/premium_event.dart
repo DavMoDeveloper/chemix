@@ -6,6 +6,7 @@ sealed class PremiumEvent extends Equatable {
 }
 
 class PremiumStarted extends PremiumEvent {}
+
 class PurchaseRequested extends PremiumEvent {
   final String productId;
   PurchaseRequested(this.productId);
@@ -13,4 +14,5 @@ class PurchaseRequested extends PremiumEvent {
   @override
   List<Object?> get props => [productId];
 }
+
 class PurchaseRestored extends PremiumEvent {}

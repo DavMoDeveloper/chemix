@@ -23,7 +23,8 @@ class PaywallPage extends StatelessWidget {
         listener: (context, state) {
           if (state is PremiumError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                  content: Text(state.message), backgroundColor: Colors.red),
             );
           }
           if (state is PremiumActive) {
@@ -51,17 +52,18 @@ class PaywallPage extends StatelessWidget {
                   ),
                 ),
               ),
-
               SafeArea(
                 child: Column(
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
                         child: Column(
                           children: [
                             const SizedBox(height: 20),
-                            const Icon(Icons.star_rounded, size: 80, color: Colors.amber),
+                            const Icon(Icons.star_rounded,
+                                size: 80, color: Colors.amber),
                             const SizedBox(height: 16),
                             Text(
                               'Domina la Química',
@@ -75,22 +77,24 @@ class PaywallPage extends StatelessWidget {
                               'Consigue todas las herramientas para ser un experto',
                               textAlign: TextAlign.center,
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.textTheme.bodyMedium?.color?.withAlpha(180),
+                                color: theme.textTheme.bodyMedium?.color
+                                    ?.withAlpha(180),
                               ),
                             ),
                             const SizedBox(height: 40),
-
                             _BenefitCard(
                               icon: Icons.quiz_rounded,
                               iconColor: Colors.blue,
                               title: 'Quizzes Ilimitados',
-                              subtitle: 'No te detengas, practica cuanto quieras.',
+                              subtitle:
+                                  'No te detengas, practica cuanto quieras.',
                             ),
                             _BenefitCard(
                               icon: Icons.auto_graph_rounded,
                               iconColor: Colors.green,
                               title: 'Estadísticas Avanzadas',
-                              subtitle: 'Visualiza tu progreso elemento a elemento.',
+                              subtitle:
+                                  'Visualiza tu progreso elemento a elemento.',
                             ),
                             _BenefitCard(
                               icon: Icons.no_accounts_rounded,
@@ -102,18 +106,19 @@ class PaywallPage extends StatelessWidget {
                               icon: Icons.offline_bolt_rounded,
                               iconColor: Colors.purple,
                               title: 'Modo Offline',
-                              subtitle: 'Estudia incluso sin conexión a internet.',
+                              subtitle:
+                                  'Estudia incluso sin conexión a internet.',
                             ),
                           ],
                         ),
                       ),
                     ),
-
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: theme.cardColor,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(32)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withAlpha(20),
@@ -139,8 +144,11 @@ class PaywallPage extends StatelessWidget {
                               price: '\$19.99 / año',
                               savings: 'Ahorra 40%',
                               isSelected: true,
-                              onTap: isLoading ? null : () => 
-                                context.read<PremiumBloc>().add(PurchaseRequested('premium_yearly')),
+                              onTap: isLoading
+                                  ? null
+                                  : () => context
+                                      .read<PremiumBloc>()
+                                      .add(PurchaseRequested('premium_yearly')),
                             ),
                             const SizedBox(height: 12),
                             _PricingOption(
@@ -148,13 +156,20 @@ class PaywallPage extends StatelessWidget {
                               price: '\$3.99 / mes',
                               savings: '',
                               isSelected: false,
-                              onTap: isLoading ? null : () => 
-                                context.read<PremiumBloc>().add(PurchaseRequested('premium_monthly')),
+                              onTap: isLoading
+                                  ? null
+                                  : () => context.read<PremiumBloc>().add(
+                                      PurchaseRequested('premium_monthly')),
                             ),
                             const SizedBox(height: 24),
                             TextButton(
-                              onPressed: isLoading ? null : () => context.read<PremiumBloc>().add(PurchaseRestored()),
-                              child: const Text('¿Ya lo compraste? Restaurar compra'),
+                              onPressed: isLoading
+                                  ? null
+                                  : () => context
+                                      .read<PremiumBloc>()
+                                      .add(PurchaseRestored()),
+                              child: const Text(
+                                  '¿Ya lo compraste? Restaurar compra'),
                             ),
                           ],
                         ],
@@ -163,7 +178,6 @@ class PaywallPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               if (isLoading)
                 Container(
                   color: Colors.black.withAlpha(60),
@@ -215,7 +229,8 @@ class _BenefitCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(title,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
@@ -267,11 +282,13 @@ class _PricingOption extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(title,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       if (savings.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.amber,
                             borderRadius: BorderRadius.circular(4),

@@ -1,11 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../compounds/data/compounds_repository.dart';
 import '../../elements/data/elements_repository.dart';
 import '../../premium/bloc/premium_bloc.dart';
 import '../../premium/bloc/premium_state.dart';
 import '../../progress/bloc/progress_bloc.dart';
 import '../../progress/bloc/progress_event.dart';
+import '../../progress/data/progress_repository.dart';
 import '../data/review_service.dart';
 import '../domain/quiz_generator.dart';
 import 'quiz_event.dart';
@@ -20,17 +22,21 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   static const String _dailyQuizCountKey = 'quiz_daily_quiz_count';
 
   final ElementsRepository elementsRepo;
+  final CompoundsRepository compoundsRepo;
   final PremiumBloc premiumBloc;
   final ProgressBloc progressBloc;
+  final ProgressRepository progressRepo;
   final ReviewService reviewService;
 
   bool _isReviewMode = false;
-  final Set<String> _reviewSolvedIds = {};
+  final Set<String> _reviewSolvedKeys = {};
 
   QuizBloc({
     required this.elementsRepo,
+    required this.compoundsRepo,
     required this.premiumBloc,
     required this.progressBloc,
+    required this.progressRepo,
     required this.reviewService,
   }) : super(QuizInitial()) {
     on<QuizStarted>(_onStarted);
@@ -45,36 +51,38 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     Emitter<QuizState> emit,
   ) async {
     _isReviewMode = true;
-    _reviewSolvedIds.clear();
+    _reviewSolvedKeys.clear();
 
-    final wrongIds = await reviewService.getWrongIds();
-    if (wrongIds.isEmpty) {
-      emit(QuizLocked('Aún no tienes errores para repasar ✅'));
+    final wrongKeys = await reviewService.getWrongMasteryKeys();
+    final dueKeys = await progressRepo.dueMasteryKeys();
+    final targetKeys = {...wrongKeys, ...dueKeys};
+
+    if (targetKeys.isEmpty) {
+      emit(QuizLocked('Aun no tienes repasos pendientes.'));
       return;
     }
 
-    final all = await elementsRepo.getAll();
-    final subset = all.where((e) => wrongIds.contains(e.id)).toList();
+    final elements = await elementsRepo.getAll();
+    final compounds = await compoundsRepo.getAll();
+    final questions = QuizGenerator.generate(
+      elements: elements,
+      compounds: compounds,
+      mode: QuizMode.reviewDue,
+      allowedMasteryKeys: targetKeys,
+      total: 10,
+    );
 
-    if (subset.isEmpty) {
-      emit(QuizLocked('No hay elementos disponibles para repasar.'));
+    if (questions.isEmpty) {
+      emit(QuizLocked('No hay preguntas disponibles para tu repaso.'));
       return;
     }
 
-    final questions = QuizGenerator.generate(all, total: 10)
-        .where((q) => wrongIds.contains(q.elementId))
-        .toList();
-
-    final safeQuestions = questions.isNotEmpty
-        ? questions.take(10).toList()
-        : QuizGenerator.generate(subset, total: subset.length.clamp(1, 10));
-
-    emit(QuizInProgress(index: 0, questions: safeQuestions, correctCount: 0));
+    emit(QuizInProgress(index: 0, questions: questions, correctCount: 0));
   }
 
   Future<void> _onStarted(QuizStarted event, Emitter<QuizState> emit) async {
     _isReviewMode = false;
-    _reviewSolvedIds.clear();
+    _reviewSolvedKeys.clear();
     final isPremium = premiumBloc.state is PremiumActive;
 
     if (!isPremium) {
@@ -95,7 +103,14 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     }
 
     final elements = await elementsRepo.getAll();
-    final questions = QuizGenerator.generate(elements, total: 10);
+    final compounds = await compoundsRepo.getAll();
+    final questions = QuizGenerator.generate(
+      elements: elements,
+      compounds: compounds,
+      mode: event.mode,
+      total: 10,
+    );
+
     emit(QuizInProgress(
       index: 0,
       questions: questions,
@@ -109,16 +124,17 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     Emitter<QuizState> emit,
   ) async {
     final s = state;
-    if (s is! QuizInProgress) return;
+    if (s is! QuizInProgress || s.selected != null) return;
 
-    final wasCorrect = e.index == s.current.correctIndex;
+    final question = s.current;
+    final wasCorrect = e.index == question.correctIndex;
 
     if (!wasCorrect) {
-      await reviewService.addWrong(s.current.elementId);
+      await reviewService.addWrongQuestion(question, e.index);
     }
 
     if (_isReviewMode && wasCorrect) {
-      _reviewSolvedIds.add(s.current.elementId);
+      _reviewSolvedKeys.add(question.masteryKey);
     }
 
     final isPremium = premiumBloc.state is PremiumActive;
@@ -127,7 +143,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         !isPremium && !wasCorrect && newWrong >= premiumNudgeThreshold;
     final updatedCorrectIds = [
       ...s.correctElementIds,
-      if (wasCorrect) s.current.elementId,
+      if (wasCorrect && question.itemType == 'element') question.itemId,
+    ];
+    final answers = [
+      ...s.answers,
+      QuizAnswerRecord(question: question, selectedIndex: e.index),
     ];
 
     emit(QuizInProgress(
@@ -138,6 +158,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       wrongCount: newWrong,
       showPremiumNudge: nudge,
       correctElementIds: updatedCorrectIds,
+      answers: answers,
     ));
   }
 
@@ -154,6 +175,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         wrongCount: s.wrongCount,
         showPremiumNudge: false,
         correctElementIds: s.correctElementIds,
+        answers: s.answers,
       ));
     }
   }
@@ -169,10 +191,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         score: s.correctCount,
         total: s.questions.length,
         correctElementIds: s.correctElementIds,
+        answers: s.answers,
       ),
     );
-    if (_isReviewMode && _reviewSolvedIds.isNotEmpty) {
-      await reviewService.removeMany(_reviewSolvedIds);
+    if (_isReviewMode && _reviewSolvedKeys.isNotEmpty) {
+      await reviewService.removeMany(_reviewSolvedKeys);
     }
 
     emit(QuizCompleted(score: s.correctCount, total: s.questions.length));
