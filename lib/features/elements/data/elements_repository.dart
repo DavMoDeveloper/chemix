@@ -8,7 +8,7 @@ class ElementItem {
   final int atomicNumber;
   final String category;
   final String summary;
-  final String uses;
+  final List<String> uses;
   final String funFact;
   final int x;
   final int y;
@@ -31,14 +31,27 @@ class ElementItem {
       id: (json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       symbol: (json['symbol'] ?? '').toString(),
-      atomicNumber: (json['atomicNumber'] as num?)?.toInt() ?? 0,
+      atomicNumber:
+          ((json['atomicNumber'] ?? json['atomic_number']) as num?)?.toInt() ??
+              0,
       category: (json['category'] ?? '').toString(),
       summary: (json['summary'] ?? '').toString(),
-      uses: (json['uses'] ?? '').toString(),
-      funFact: (json['funFact'] ?? '').toString(),
+      uses: _stringList(json['uses']),
+      funFact: (json['funFact'] ?? json['fun_fact'] ?? '').toString(),
       x: x,
       y: y,
     );
+  }
+
+  static List<String> _stringList(dynamic value) {
+    if (value is List) {
+      return value
+          .map((item) => item.toString().trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false);
+    }
+    final text = (value ?? '').toString().trim();
+    return text.isEmpty ? const [] : [text];
   }
 }
 

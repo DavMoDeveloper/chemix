@@ -37,17 +37,32 @@ class CompoundDetailPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Masa molar: ${compound.molarMass}',
+                          'Masa molar: ${compound.formattedMolarMass}',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 16),
                         _Card(title: 'Resumen', body: compound.summary),
-                        _Card(title: 'Usos', body: compound.uses),
+                        _ListCard(title: 'Usos', items: compound.uses),
                         _Card(title: 'Seguridad', body: compound.safety),
                       ],
                     ),
         );
       },
+    );
+  }
+}
+
+class _ListCard extends StatelessWidget {
+  final String title;
+  final List<String> items;
+
+  const _ListCard({required this.title, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      title: title,
+      body: items.isEmpty ? '' : items.map((item) => '• $item').join('\n'),
     );
   }
 }

@@ -33,6 +33,8 @@ class ElementsBloc extends Bloc<ElementsEvent, ElementsState> {
         : s.all.where((el) {
             return el.name.toLowerCase().contains(q) ||
                 el.symbol.toLowerCase().contains(q) ||
+                el.category.toLowerCase().contains(q) ||
+                el.uses.any((use) => use.toLowerCase().contains(q)) ||
                 el.atomicNumber.toString() == q;
           }).toList();
 

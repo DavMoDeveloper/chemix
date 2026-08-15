@@ -38,7 +38,9 @@ class CompoundsBloc extends Bloc<CompoundsEvent, CompoundsState> {
         : s.all.where((compound) {
             return compound.name.toLowerCase().contains(q) ||
                 compound.formula.toLowerCase().contains(q) ||
-                compound.category.toLowerCase().contains(q);
+                compound.category.toLowerCase().contains(q) ||
+                compound.state.toLowerCase().contains(q) ||
+                compound.uses.any((use) => use.toLowerCase().contains(q));
           }).toList();
 
     emit(CompoundsLoaded(all: s.all, filtered: filtered, query: event.query));

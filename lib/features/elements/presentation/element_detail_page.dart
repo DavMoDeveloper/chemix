@@ -34,12 +34,27 @@ class ElementDetailPage extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyMedium),
                         const SizedBox(height: 16),
                         _Card(title: 'Resumen', body: el.summary),
-                        _Card(title: 'Usos', body: el.uses),
+                        _ListCard(title: 'Usos', items: el.uses),
                         _Card(title: 'Dato curioso', body: el.funFact),
                       ],
                     ),
         );
       },
+    );
+  }
+}
+
+class _ListCard extends StatelessWidget {
+  final String title;
+  final List<String> items;
+
+  const _ListCard({required this.title, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      title: title,
+      body: items.isEmpty ? '' : items.map((item) => '• $item').join('\n'),
     );
   }
 }

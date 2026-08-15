@@ -22,6 +22,20 @@ void main() {
         elements.every((element) => element.x > 0 && element.y > 0),
         isTrue,
       );
+      expect(elements.every((element) => element.uses.isNotEmpty), isTrue);
+      expect(elements.every((element) => element.name.isNotEmpty), isTrue);
+    });
+  });
+
+  group('CompoundsRepository', () {
+    test('carga compuestos con datos estructurados válidos', () async {
+      final compounds = await CompoundsRepository().getAll();
+
+      expect(compounds, isNotEmpty);
+      expect(compounds.map((item) => item.id).toSet().length, compounds.length);
+      expect(compounds.every((item) => item.molarMass > 0), isTrue);
+      expect(compounds.every((item) => item.molarMassUnit == 'g/mol'), isTrue);
+      expect(compounds.every((item) => item.uses.isNotEmpty), isTrue);
     });
   });
 
@@ -35,7 +49,7 @@ void main() {
         atomicNumber: i + 1,
         category: i % 2 == 0 ? 'Nonmetal' : 'Alkali metal',
         summary: 'Resumen $i',
-        uses: 'Usos $i',
+        uses: ['Uso $i'],
         funFact: 'Dato $i',
         x: (i % 18) + 1,
         y: (i ~/ 18) + 1,
@@ -49,10 +63,11 @@ void main() {
         name: 'Compuesto$i',
         formula: 'C$i',
         category: i % 2 == 0 ? 'Sal' : 'Acido',
-        molarMass: '${10 + i} g/mol',
+        molarMass: (10 + i).toDouble(),
+        molarMassUnit: 'g/mol',
         state: i % 2 == 0 ? 'Solido' : 'Liquido',
         summary: 'Resumen compuesto $i',
-        uses: 'Usos compuesto $i',
+        uses: ['Uso compuesto $i'],
         safety: 'Seguridad compuesto $i',
       ),
     );
@@ -89,6 +104,22 @@ void main() {
       );
       for (final q in questions) {
         expect(q.options.length, 4);
+      }
+    });
+
+    test('genera preguntas nuevas de compuestos con opciones únicas', () {
+      final questions = QuizGenerator.generate(
+        elements: elements,
+        compounds: compounds,
+        mode: QuizMode.compounds,
+        total: 100,
+      );
+      final types = questions.map((question) => question.questionType).toSet();
+
+      expect(types, containsAll(['compound_use', 'state', 'molar_mass']));
+      for (final question in questions) {
+        expect(question.options.length, 4);
+        expect(question.options.toSet().length, question.options.length);
       }
     });
   });

@@ -110,6 +110,9 @@ class QuizGenerator {
       if (!basicOnly) {
         questions.add(_category(el, elements, rnd));
       }
+      if (!basicOnly && !categoriesOnly && el.uses.isNotEmpty) {
+        questions.add(_elementUse(el, elements, rnd));
+      }
     }
 
     return questions;
@@ -127,6 +130,11 @@ class QuizGenerator {
       questions.add(_compoundToFormula(compound, compounds, rnd));
       questions.add(_compoundCategory(compound, compounds, rnd));
       questions.add(_compoundSafety(compound, compounds, rnd));
+      if (compound.uses.isNotEmpty) {
+        questions.add(_compoundUse(compound, compounds, rnd));
+      }
+      questions.add(_compoundState(compound, compounds, rnd));
+      questions.add(_compoundMolarMass(compound, compounds, rnd));
     }
 
     return questions;
@@ -214,14 +222,14 @@ class QuizGenerator {
         .toSet()
         .toList();
     final fallback = <String>{
-      'Nonmetal',
-      'Halogen',
-      'Noble gas',
-      'Metalloid',
-      'Alkali metal',
-      'Alkaline earth metal',
-      'Transition metal',
-      'Post-transition metal',
+      'No metal',
+      'Halógeno',
+      'Gas noble',
+      'Metaloide',
+      'Metal alcalino',
+      'Metal alcalinotérreo',
+      'Metal de transición',
+      'Metal postransición',
     };
     final pool = {...categories, ...fallback}
         .where((c) => c != correct)
@@ -289,7 +297,7 @@ class QuizGenerator {
       options: options,
       correctIndex: options.indexOf(correct),
       explanation:
-          'La formula de ${compound.name} es ${compound.formula}. Su masa molar es ${compound.molarMass}.',
+          'La formula de ${compound.name} es ${compound.formula}. Su masa molar es ${compound.formattedMolarMass}.',
     );
   }
 
@@ -299,11 +307,17 @@ class QuizGenerator {
     Random rnd,
   ) {
     final correct = compound.category;
-    final categories = all
-        .map((e) => e.category)
-        .where((c) => c.trim().isNotEmpty && c != correct)
-        .toSet()
-        .toList()
+    final categories = {
+      ...all
+          .map((e) => e.category)
+          .where((c) => c.trim().isNotEmpty && c != correct),
+      'Ácido',
+      'Base',
+      'Sal',
+      'Óxido',
+      'Alcohol',
+      'Hidrocarburo',
+    }.where((category) => category != correct).toList()
       ..shuffle(rnd);
     final options = ([...categories.take(3), correct]..shuffle(rnd));
 
@@ -342,6 +356,109 @@ class QuizGenerator {
       correctIndex: options.indexOf(correct),
       explanation:
           'Seguridad para ${compound.name}: ${compound.safety.isEmpty ? 'revisar ficha de seguridad antes de manipularlo.' : compound.safety}',
+    );
+  }
+
+  static Question _elementUse(
+    ElementItem element,
+    List<ElementItem> all,
+    Random rnd,
+  ) {
+    final correct = element.uses[rnd.nextInt(element.uses.length)];
+    final pool = all
+        .where((item) => item.id != element.id)
+        .expand((item) => item.uses)
+        .where((use) => use != correct)
+        .toSet()
+        .toList()
+      ..shuffle(rnd);
+    final options = ([...pool.take(3), correct]..shuffle(rnd));
+    return Question(
+      itemId: element.id,
+      itemType: 'element',
+      questionType: 'element_use',
+      prompt: '¿Cuál es un uso de ${element.name}?',
+      options: options,
+      correctIndex: options.indexOf(correct),
+      explanation: '${element.name} se utiliza en: ${element.uses.join(', ')}.',
+    );
+  }
+
+  static Question _compoundUse(
+    CompoundItem compound,
+    List<CompoundItem> all,
+    Random rnd,
+  ) {
+    final correct = compound.uses[rnd.nextInt(compound.uses.length)];
+    final pool = all
+        .where((item) => item.id != compound.id)
+        .expand((item) => item.uses)
+        .where((use) => use != correct)
+        .toSet()
+        .toList()
+      ..shuffle(rnd);
+    final options = ([...pool.take(3), correct]..shuffle(rnd));
+    return Question(
+      itemId: compound.id,
+      itemType: 'compound',
+      questionType: 'compound_use',
+      prompt: '¿Cuál es un uso de ${compound.name}?',
+      options: options,
+      correctIndex: options.indexOf(correct),
+      explanation:
+          '${compound.name} se utiliza en: ${compound.uses.join(', ')}.',
+    );
+  }
+
+  static Question _compoundState(
+    CompoundItem compound,
+    List<CompoundItem> all,
+    Random rnd,
+  ) {
+    final correct = compound.state;
+    final pool = {
+      ...all.map((item) => item.state),
+      'Sólido',
+      'Líquido',
+      'Gas',
+      'Plasma',
+    }.where((state) => state.isNotEmpty && state != correct).toList()
+      ..shuffle(rnd);
+    final options = ([...pool.take(3), correct]..shuffle(rnd));
+    return Question(
+      itemId: compound.id,
+      itemType: 'compound',
+      questionType: 'state',
+      prompt: '¿Cuál es el estado físico habitual de ${compound.name}?',
+      options: options,
+      correctIndex: options.indexOf(correct),
+      explanation:
+          '${compound.name} se encuentra habitualmente en estado ${compound.state.toLowerCase()}.',
+    );
+  }
+
+  static Question _compoundMolarMass(
+    CompoundItem compound,
+    List<CompoundItem> all,
+    Random rnd,
+  ) {
+    final correct = compound.formattedMolarMass;
+    final pool = all
+        .where((item) => item.id != compound.id)
+        .map((item) => item.formattedMolarMass)
+        .where((mass) => mass != correct)
+        .toSet()
+        .toList()
+      ..shuffle(rnd);
+    final options = ([...pool.take(3), correct]..shuffle(rnd));
+    return Question(
+      itemId: compound.id,
+      itemType: 'compound',
+      questionType: 'molar_mass',
+      prompt: '¿Cuál es la masa molar de ${compound.name}?',
+      options: options,
+      correctIndex: options.indexOf(correct),
+      explanation: 'La masa molar de ${compound.name} es $correct.',
     );
   }
 

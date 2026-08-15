@@ -111,10 +111,23 @@ class _QuizPageState extends State<QuizPage> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 20),
-                      FilledButton.icon(
-                        onPressed: () => context.go('/'),
-                        icon: const Icon(Icons.home_outlined),
-                        label: const Text('Volver'),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 10,
+                        children: [
+                          if (state.showPremiumAction)
+                            FilledButton.icon(
+                              onPressed: () => context.go('/premium'),
+                              icon: const Icon(Icons.workspace_premium),
+                              label: const Text('Ver Premium'),
+                            ),
+                          FilledButton.tonalIcon(
+                            onPressed: () => context.go('/'),
+                            icon: const Icon(Icons.home_outlined),
+                            label: const Text('Volver'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -344,7 +357,7 @@ class _LearnCard extends StatelessWidget {
             lines: [
               compound.summary,
               'Tipo: ${compound.category}',
-              'Usos: ${compound.uses}',
+              'Usos: ${compound.uses.join(', ')}',
               'Seguridad: ${compound.safety}',
             ],
           );
@@ -363,7 +376,7 @@ class _LearnCard extends StatelessWidget {
           lines: [
             el.summary,
             'Categoria: ${el.category}',
-            'Usos: ${el.uses}',
+            'Usos: ${el.uses.join(', ')}',
             'Dato curioso: ${el.funFact}',
           ],
         );

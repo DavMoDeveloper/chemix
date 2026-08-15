@@ -97,6 +97,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           'Hoy usaste ${quota.limit}/${quota.limit} quizzes gratis.\n'
           'Vuelve en ${h}h ${m}min.\n'
           'O hazte Premium para quizzes ilimitados.',
+          showPremiumAction: true,
         ));
         return;
       }

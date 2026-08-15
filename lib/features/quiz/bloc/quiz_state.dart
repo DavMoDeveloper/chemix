@@ -11,10 +11,12 @@ class QuizInitial extends QuizState {}
 
 class QuizLocked extends QuizState {
   final String reason;
-  QuizLocked(this.reason);
+  final bool showPremiumAction;
+
+  QuizLocked(this.reason, {this.showPremiumAction = false});
 
   @override
-  List<Object?> get props => [reason];
+  List<Object?> get props => [reason, showPremiumAction];
 }
 
 class QuizInProgress extends QuizState {

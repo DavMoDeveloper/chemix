@@ -7,10 +7,11 @@ class CompoundItem {
   final String name;
   final String formula;
   final String category;
-  final String molarMass;
+  final double molarMass;
+  final String molarMassUnit;
   final String state;
   final String summary;
-  final String uses;
+  final List<String> uses;
   final String safety;
 
   const CompoundItem({
@@ -19,6 +20,7 @@ class CompoundItem {
     required this.formula,
     required this.category,
     required this.molarMass,
+    required this.molarMassUnit,
     required this.state,
     required this.summary,
     required this.uses,
@@ -31,12 +33,35 @@ class CompoundItem {
       name: (json['name'] ?? '').toString(),
       formula: (json['formula'] ?? '').toString(),
       category: (json['category'] ?? '').toString(),
-      molarMass: (json['molarMass'] ?? '').toString(),
+      molarMass: _molarMass(json['molarMass'] ?? json['molar_mass']),
+      molarMassUnit:
+          (json['molarMassUnit'] ?? json['unit_mass'] ?? 'g/mol').toString(),
       state: (json['state'] ?? '').toString(),
       summary: (json['summary'] ?? '').toString(),
-      uses: (json['uses'] ?? '').toString(),
+      uses: _stringList(json['uses']),
       safety: (json['safety'] ?? '').toString(),
     );
+  }
+
+  String get formattedMolarMass =>
+      '${molarMass.toStringAsFixed(3).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')} $molarMassUnit';
+
+  static double _molarMass(dynamic value) {
+    if (value is num) return value.toDouble();
+    final match =
+        RegExp(r'[0-9]+(?:\.[0-9]+)?').firstMatch(value?.toString() ?? '');
+    return double.tryParse(match?.group(0) ?? '') ?? 0;
+  }
+
+  static List<String> _stringList(dynamic value) {
+    if (value is List) {
+      return value
+          .map((item) => item.toString().trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false);
+    }
+    final text = (value ?? '').toString().trim();
+    return text.isEmpty ? const [] : [text];
   }
 }
 

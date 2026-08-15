@@ -376,24 +376,34 @@ class _PeriodicTable extends StatelessWidget {
 Color _categoryColor(String category) {
   switch (category.toLowerCase()) {
     case 'alkali metal':
+    case 'metal alcalino':
       return const Color(0xFFE57373);
     case 'alkaline earth metal':
+    case 'metal alcalinotérreo':
       return const Color(0xFFFFB74D);
     case 'transition metal':
+    case 'metal de transición':
       return const Color(0xFF90CAF9);
     case 'post-transition metal':
+    case 'metal postransición':
       return const Color(0xFF80CBC4);
     case 'metalloid':
+    case 'metaloide':
       return const Color(0xFFA5D6A7);
     case 'nonmetal':
+    case 'no metal':
       return const Color(0xFFCE93D8);
     case 'halogen':
+    case 'halógeno':
       return const Color(0xFFF48FB1);
     case 'noble gas':
+    case 'gas noble':
       return const Color(0xFF80DEEA);
     case 'lanthanide':
+    case 'lantánido':
       return const Color(0xFFFFCC02);
     case 'actinide':
+    case 'actínido':
       return const Color(0xFFBCAAA4);
     default:
       return const Color(0xFF9E9E9E);
