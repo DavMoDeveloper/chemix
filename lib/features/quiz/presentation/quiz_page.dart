@@ -24,6 +24,8 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  bool _exitDialogOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,130 +34,179 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
+  Future<void> _requestExit() async {
+    if (_exitDialogOpen) return;
+
+    final quizState = context.read<QuizBloc>().state;
+    if (quizState is! QuizInProgress) {
+      context.go('/learn');
+      return;
+    }
+
+    _exitDialogOpen = true;
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('¿Salir del quiz?'),
+        content: const Text(
+          'Si sales ahora, perderás el progreso de este quiz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Seguir en el quiz'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Salir'),
+          ),
+        ],
+      ),
+    );
+    _exitDialogOpen = false;
+
+    if (shouldExit == true && mounted) {
+      context.go('/learn');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isReviewMode ? 'Repaso de hoy' : widget.mode.title),
-      ),
-      body: BlocListener<QuizBloc, QuizState>(
-        listenWhen: (prev, curr) =>
-            curr is QuizInProgress &&
-            curr.showPremiumNudge &&
-            (prev is! QuizInProgress || !prev.showPremiumNudge),
-        listener: (context, state) async {
-          if (state is! QuizInProgress) return;
-          final goPremium = await showModalBottomSheet<bool>(
-            context: context,
-            showDragHandle: true,
-            builder: (_) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Quieres mejorar mas rapido?',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Con Premium tienes quizzes ilimitados, progreso completo y sin anuncios.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Ver Premium'),
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Seguir practicando'),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-          if (goPremium == true && context.mounted) {
-            context.go('/premium');
-          }
-        },
-        child: BlocBuilder<QuizBloc, QuizState>(
-          builder: (context, state) {
-            if (state is QuizInitial) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state is QuizLocked) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _requestExit();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: _requestExit,
+            tooltip: 'Salir del quiz',
+            icon: const Icon(Icons.arrow_back),
+          ),
+          title: Text(
+            widget.isReviewMode ? 'Repaso de hoy' : widget.mode.title,
+          ),
+        ),
+        body: BlocListener<QuizBloc, QuizState>(
+          listenWhen: (prev, curr) =>
+              curr is QuizInProgress &&
+              curr.showPremiumNudge &&
+              (prev is! QuizInProgress || !prev.showPremiumNudge),
+          listener: (context, state) async {
+            if (state is! QuizInProgress) return;
+            final goPremium = await showModalBottomSheet<bool>(
+              context: context,
+              showDragHandle: true,
+              builder: (_) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.lock_clock_outlined, size: 56),
-                      const SizedBox(height: 16),
-                      Text(
-                        state.reason,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium,
+                      const Text(
+                        'Quieres mejorar mas rapido?',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                      const SizedBox(height: 20),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 10,
-                        children: [
-                          if (state.showPremiumAction)
-                            FilledButton.icon(
-                              onPressed: () => context.go('/premium'),
-                              icon: const Icon(Icons.workspace_premium),
-                              label: const Text('Ver Premium'),
-                            ),
-                          FilledButton.tonalIcon(
-                            onPressed: () => context.go('/'),
-                            icon: const Icon(Icons.home_outlined),
-                            label: const Text('Volver'),
-                          ),
-                        ],
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Con Premium tienes quizzes ilimitados, progreso completo y sin anuncios.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Ver Premium'),
+                        ),
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Seguir practicando'),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              );
+                );
+              },
+            );
+            if (goPremium == true && context.mounted) {
+              context.go('/premium');
             }
-
-            if (state is QuizInProgress) {
-              return _QuizBody(state: state);
-            }
-
-            if (state is QuizCompleted) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (context.mounted) {
-                  context.go(
-                    '/quiz/result',
-                    extra: {
-                      'score': state.score,
-                      'total': state.total,
-                    },
-                  );
-                }
-              });
-              return const SizedBox.shrink();
-            }
-
-            return const SizedBox.shrink();
           },
+          child: BlocBuilder<QuizBloc, QuizState>(
+            builder: (context, state) {
+              if (state is QuizInitial) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is QuizLocked) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_clock_outlined, size: 56),
+                        const SizedBox(height: 16),
+                        Text(
+                          state.reason,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 20),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 12,
+                          runSpacing: 10,
+                          children: [
+                            if (state.showPremiumAction)
+                              FilledButton.icon(
+                                onPressed: () => context.go('/premium'),
+                                icon: const Icon(Icons.workspace_premium),
+                                label: const Text('Ver Premium'),
+                              ),
+                            FilledButton.tonalIcon(
+                              onPressed: () => context.go('/learn'),
+                              icon: const Icon(Icons.route_outlined),
+                              label: const Text('Volver'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              if (state is QuizInProgress) {
+                return _QuizBody(state: state);
+              }
+
+              if (state is QuizCompleted) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) {
+                    context.go(
+                      '/quiz/result',
+                      extra: {
+                        'score': state.score,
+                        'total': state.total,
+                      },
+                    );
+                  }
+                });
+                return const SizedBox.shrink();
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
@@ -173,89 +224,97 @@ class _QuizBody extends StatelessWidget {
     final hasAnswered = state.selected != null;
     final isCorrect = hasAnswered && state.selected == q.correctIndex;
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LinearProgressIndicator(
-            value: (state.index + 1) / state.questions.length,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Pregunta ${state.index + 1} de ${state.questions.length}',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 12),
-          Text(q.prompt, style: Theme.of(context).textTheme.titleMedium),
-          if (hasAnswered)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: _AnswerFeedback(
-                isCorrect: isCorrect,
-                selectedAnswer: q.options[state.selected!],
-                correctAnswer: q.correctAnswer,
-                explanation: q.explanation,
-              ),
-            ),
-          const SizedBox(height: 16),
-          ...List.generate(q.options.length, (i) {
-            final isSelected = state.selected == i;
-            final isCorrectOption = i == q.correctIndex;
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _optionColor(
-                      context: context,
-                      isSelected: isSelected,
-                      isCorrect: isCorrectOption,
-                      hasAnswered: hasAnswered,
-                    ),
-                    foregroundColor: hasAnswered
-                        ? Colors.white
-                        : Theme.of(context).colorScheme.onPrimary,
-                    disabledBackgroundColor: _optionColor(
-                      context: context,
-                      isSelected: isSelected,
-                      isCorrect: isCorrectOption,
-                      hasAnswered: hasAnswered,
-                    ),
-                    disabledForegroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: hasAnswered
-                      ? null
-                      : () => context.read<QuizBloc>().add(AnswerSelected(i)),
-                  child: Text(q.options[i], textAlign: TextAlign.center),
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverFillRemaining(
+            hasScrollBody: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LinearProgressIndicator(
+                  value: (state.index + 1) / state.questions.length,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            );
-          }),
-          if (hasAnswered && !isCorrect) ...[
-            const SizedBox(height: 12),
-            _LearnCard(questionItemId: q.itemId, itemType: q.itemType),
-          ],
-          const Spacer(),
-          AnimatedOpacity(
-            opacity: hasAnswered ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 250),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: hasAnswered
-                    ? () => context.read<QuizBloc>().add(NextQuestion())
-                    : null,
-                child: const Text('Siguiente'),
-              ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pregunta ${state.index + 1} de ${state.questions.length}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                Text(q.prompt, style: Theme.of(context).textTheme.titleMedium),
+                if (hasAnswered)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: _AnswerFeedback(
+                      isCorrect: isCorrect,
+                      selectedAnswer: q.options[state.selected!],
+                      correctAnswer: q.correctAnswer,
+                      explanation: q.explanation,
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                ...List.generate(q.options.length, (i) {
+                  final isSelected = state.selected == i;
+                  final isCorrectOption = i == q.correctIndex;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _optionColor(
+                            context: context,
+                            isSelected: isSelected,
+                            isCorrect: isCorrectOption,
+                            hasAnswered: hasAnswered,
+                          ),
+                          foregroundColor: hasAnswered
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.onPrimary,
+                          disabledBackgroundColor: _optionColor(
+                            context: context,
+                            isSelected: isSelected,
+                            isCorrect: isCorrectOption,
+                            hasAnswered: hasAnswered,
+                          ),
+                          disabledForegroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: hasAnswered
+                            ? null
+                            : () =>
+                                context.read<QuizBloc>().add(AnswerSelected(i)),
+                        child: Text(q.options[i], textAlign: TextAlign.center),
+                      ),
+                    ),
+                  );
+                }),
+                if (hasAnswered && !isCorrect) ...[
+                  const SizedBox(height: 12),
+                  _LearnCard(questionItemId: q.itemId, itemType: q.itemType),
+                ],
+                const Spacer(),
+                AnimatedOpacity(
+                  opacity: hasAnswered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: hasAnswered
+                          ? () => context.read<QuizBloc>().add(NextQuestion())
+                          : null,
+                      child: const Text('Siguiente'),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
